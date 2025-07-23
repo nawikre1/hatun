@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Tunnel Status</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f5f5f5; color: #333; margin: 0; padding: 2rem; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0D47A1; }
+        .status-box { margin-top: 1.5rem; padding: 1rem; border-radius: 4px; font-weight: bold; }
+        .status-box.connected { background-color: #E8F5E9; color: #2E7D32; }
+        .status-box.disconnected { background-color: #FFEBEE; color: #C62828; }
+        .status-box.connecting { background-color: #E3F2FD; color: #1565C0; }
+        p { line-height: 1.6; }
+        code { background-color: #eee; padding: 2px 5px; border-radius: 3px; }
+        a { color: #1976D2; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Secure Tunnel Status</h1>
+        <p>This page shows the current status of your connection to the tunnel server.</p>
+        
+        <div id="status-box" class="status-box connecting">
+            <p><strong>Status:</strong> <span id="status-text">Loading...</span></p>
+        </div>
+
+        <p>Your configured subdomain is: <code id="subdomain-text">...</code></p>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin: 2rem 0;">
+
+        <h2>Configuration</h2>
+        <p>
+            To change your <code>api_key</code> or <code>subdomain</code>, please go to the
+            <strong>Settings &rarr; Add-ons &rarr; Secure Tunnel &rarr; Configuration</strong> tab in Home Assistant.
+        </p>
+        <p>
+            For detailed connection logs, check the <strong>Log</strong> tab.
+        </p>
+    </div>
+
+    <script>
+        const statusBox = document.getElementById('status-box');
+        const statusText = document.getElementById('status-text');
+        const subdomainText = document.getElementById('subdomain-text');
+        // This is needed for Ingress to work correctly
+        const basePath = '{{ ingress_path }}'; 
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`${basePath}/status`);
+                const data = await response.json();
+                
+                statusText.textContent = data.status;
+                subdomainText.textContent = data.configured_subdomain;
+
+                statusBox.className = 'status-box'; // Reset classes
+                if (data.status.toLowerCase().includes('connected')) {
+                    statusBox.classList.add('connected');
+                } else if (data.status.toLowerCase().includes('disconnected') || data.status.toLowerCase().includes('error')) {
+                    statusBox.classList.add('disconnected');
+                } else {
+                    statusBox.classList.add('connecting');
+                }
+
+            } catch (error) {
+                statusText.textContent = 'Could not fetch status from add-on backend.';
+                statusBox.className = 'status-box disconnected';
+            }
+        }
+
+        // Fetch status immediately and then every 5 seconds
+        fetchStatus();
+        setInterval(fetchStatus, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# ha-tunnel-addon/config.yaml
+name: "Secure Tunnel Client"
+version: "1.0.5"
+slug: "secure_tunnel"
+description: "Connects your Home Assistant to the Secure Tunneling Service."
+url: "https://github.com/webfork/hap-addon2"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+boot: "auto"
+hassio_api: true
+hassio_role: "default"
+
+# Ingress settings to show the UI in the sidebar
+ingress: true
+panel_icon: "mdi:cloud-lock"
+panel_title: "Secure Tunnel"
+webui: "http://[HOST]:[PORT:8099]"
+
+# Configuration options that appear in the "Configuration" tab
+options:
+  api_key: ""
+  subdomain: ""
+
+schema:
+  api_key: "password"
+  subdomain: "str"
