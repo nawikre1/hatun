@@ -6,6 +6,7 @@ import os
 import time
 import httpx
 import websockets
+import base64
 
 # --- Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -71,6 +72,7 @@ async def handle_proxy_request(message, websocket):
     try:
         req_data = json.loads(message)
         req_id = req_data.get("id")
+        request_body_bytes=base64.b64decode(req_data.get("body", ""))
 
         async with httpx.AsyncClient(base_url=HA_URL, http2=True) as client:
             # Prepare the request for Home Assistant
@@ -80,16 +82,17 @@ async def handle_proxy_request(message, websocket):
                 method=req_data.get("method"),
                 url=req_data.get("url"),
                 headers=headers,
-                content=bytes(req_data.get("body", [])),
+                content=request_body_bytes,
                 timeout=30.0,
             )
 
             # Prepare the response to send back over the tunnel
+            response_body_b64 = base64.b64encode(response.content).decode('ascii')
             resp_data = {
                 "id": req_id,
                 "status": response.status_code,
                 "headers": dict(response.headers),
-                "body": list(response.content), # Convert bytes to list of ints for JSON
+                "body": response_body_b64,
             }
             await websocket.send(json.dumps(resp_data))
 
