@@ -1,12 +1,11 @@
 # ha-tunnel-addon/Dockerfile
-ARG BUILD_FROM=python:3.11-slim-buster
+ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:17.0.0
 
 FROM ${BUILD_FROM}
 
 # Install system dependencies
 # jq is used in run.sh to parse the config file
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    jq
+RUN apk add --no-cache jq
 
 # Set up the working directory
 WORKDIR /app
