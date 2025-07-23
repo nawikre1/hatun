@@ -15,9 +15,8 @@ API_KEY = os.getenv('API_KEY')
 SUBDOMAIN = os.getenv('SUBDOMAIN')
 SERVER_DOMAIN = "webfork.tech" # IMPORTANT: Change this to your Go server's domain
 SERVER_URI = f"wss://{SERVER_DOMAIN}/connect"
-HA_URL = os.getenv('HA_URL', 'http://supervisor/core')
+HA_URL = "http://homeassistant:8123"
 STATUS_FILE = "/tmp/tunnel_status"
-SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN')
 
 # --- Status Management ---
 def update_status(status: str):
@@ -69,45 +68,41 @@ async def run_client():
         reconnect_delay = min(reconnect_delay * 2, 60) # Exponential backoff up to 60s
 
 async def handle_proxy_request(message, websocket):
-    """Handles a single proxy request received from the server."""
     try:
         req_data = json.loads(message)
         req_id = req_data.get("id")
-        request_body_bytes=base64.b64decode(req_data.get("body", ""))
+        request_body_bytes = base64.b64decode(req_data.get("body", ""))
 
+        # We use the HA_URL as the base_url for the client now
         async with httpx.AsyncClient(base_url=HA_URL, http2=True) as client:
-            headers_to_remove = {'host', 'authorization'}
+            headers_to_remove = {'host', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip', 'x-scheme'}
             forward_headers = {
                 k: v[0] for k, v in req_data.get("headers", {}).items()
                 if k.lower() not in headers_to_remove
             }
-            if SUPERVISOR_TOKEN:
-                forward_headers['Authorization'] = f"Bearer {SUPERVISOR_TOKEN}"
             
+            # We no longer need the SUPERVISOR_TOKEN as we are not talking to the supervisor
+            # but to the HA Core, which handles auth via cookies/tokens passed from the user.
+
             response = await client.request(
                 method=req_data.get("method"),
-                url=req_data.get("url"),
+                url=req_data.get("url"), # The path and query from the original request
                 headers=forward_headers,
                 content=request_body_bytes,
                 timeout=30.0,
             )
 
             response_body_b64 = base64.b64encode(response.content).decode('ascii')
-
-            # --- THIS IS THE CRITICAL FIX ---
-            # Create a dictionary where every value is a list of strings,
-            # which matches the Go http.Header (map[string][]string) type.
             headers_for_go = {}
             for key, value in response.headers.multi_items():
                 if key not in headers_for_go:
                     headers_for_go[key] = []
                 headers_for_go[key].append(value)
-            # --- END OF FIX ---
 
             resp_data = {
                 "id": req_id,
                 "status": response.status_code,
-                "headers": headers_for_go, # Use the correctly formatted headers
+                "headers": headers_for_go,
                 "body": response_body_b64,
             }
             await websocket.send(json.dumps(resp_data))
