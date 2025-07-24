@@ -1,6 +1,6 @@
 # ha-tunnel-addon/config.yaml
 name: "Secure Tunnel Addon"
-version: "3.0.1"
+version: "3.0.2"
 slug: "secure_tunnel_addon"
 description: "Connects your Home Assistant to the Secure Tunneling Service."
 url: "https://github.com/webfork/hap-addon2"
@@ -13,6 +13,8 @@ boot: "auto"
 homeassistant_api: true
 hassio_api: true
 hassio_role: "homeassistant"
+host_network: true
+privileged: true
 
 # Ingress settings to show the UI in the sidebar
 # ingress: true
