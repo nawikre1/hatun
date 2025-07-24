@@ -4,7 +4,7 @@ FROM ${BUILD_FROM}
 
 RUN apk add --no-cache wget tar
 
-ARG FRP_VERSION="0.63.0"
+ARG FRP_VERSION="0.59.0"
 ARG TARGETARCH
 
 RUN set -ex; \
