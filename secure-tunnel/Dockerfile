@@ -1,25 +1,24 @@
-# ha-tunnel-addon/Dockerfile
-ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:17.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:18.0.3
 
 FROM ${BUILD_FROM}
 
-# Install system dependencies
-# jq is used in run.sh to parse the config file
-RUN apk add --no-cache jq
+RUN apk add --no-cache wget tar
 
-# Set up the working directory
-WORKDIR /app
+ARG FRP_VERSION="0.63.0"
+ARG TARGETARCH
 
-# Copy and install python dependencies
-COPY app/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN set -ex; \
+    if [ "${TARGETARCH}" = "amd64" ]; then FRP_ARCH="amd64"; \
+    elif [ "${TARGETARCH}" = "armv7" ]; then FRP_ARCH="arm"; \
+    elif [ "${TARGETARCH}" = "aarch64" ]; then FRP_ARCH="arm64"; \
+    else echo "Unsupported architecture: ${TARGETARCH}"; exit 1; fi; \
+    wget "https://github.com/fatedier/frp/releases/download/v${FRP_VERSION}/frp_${FRP_VERSION}_linux_${FRP_ARCH}.tar.gz" -O /tmp/frp.tar.gz; \
+    tar -zxvf /tmp/frp.tar.gz -C /tmp; \
+    mv "/tmp/frp_${FRP_VERSION}_linux_${FRP_ARCH}/frpc" /usr/bin/frpc; \
+    chmod +x /usr/bin/frpc; \
+    rm -rf /tmp/*
 
-# Copy the application source code
-COPY app/ .
-
-# Copy the run script and make it executable
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-# Start the application
 CMD [ "/run.sh" ]
