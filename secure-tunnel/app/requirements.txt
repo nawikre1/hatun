@@ -1,4 +1,0 @@
-websockets
-httpx[http2]
-flask
-gunicorn

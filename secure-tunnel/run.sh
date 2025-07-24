@@ -1,29 +1,27 @@
 #!/usr/bin/with-contenv bashio
 
-# Get the API key from the add-on configuration
 API_KEY=$(bashio::config 'api_key')
-
 if [[ -z "$API_KEY" ]]; then
-    bashio::log.fatal "API Key is not configured. Please set it in the add-on configuration tab and restart."
+    bashio::log.fatal "API Key is not configured."
     exit 1
 fi
 
-bashio::log.info "Fetching configuration from server..."
+bashio::log.info "Fetching WireGuard configuration from server..."
 
-# Use curl to get the configuration from your Go server
-# The server will validate the key and subscription status
-HTTP_CODE=$(curl -s -w '%{http_code}' \
-    -o /tmp/frpc.ini \
-    "https://webfork.tech/api/v1/frp-config?apiKey=${API_KEY}")
+# Get the config file content from the new endpoint
+CONFIG_CONTENT=$(curl -G -s --data-urlencode "apiKey=${API_KEY}" "https://webfork.tech/api/v1/wireguard-config")
 
-# Check the response code from the server
-if [[ "$HTTP_CODE" -ne 200 ]]; then
-    ERROR_MESSAGE=$(cat /tmp/frpc.ini)
-    bashio::log.fatal "Failed to get configuration from server. Status: ${HTTP_CODE}. Message: ${ERROR_MESSAGE}"
+if [[ -z "$CONFIG_CONTENT" ]]; then
+    bashio::log.fatal "Failed to get configuration from server. Response was empty."
     exit 1
 fi
 
-bashio::log.info "Configuration received successfully. Starting FRP client..."
+# Write the configuration to the correct location
+mkdir -p /etc/wireguard
+echo "${CONFIG_CONTENT}" > /etc/wireguard/wg0.conf
 
-# Execute the frp client with the downloaded configuration
-/usr/bin/frpc -c /tmp/frpc.ini
+bashio::log.info "Configuration received. Starting WireGuard tunnel..."
+
+# Use wg-quick to bring up the interface.
+# The 'up' command will run and stay in the foreground, keeping the add-on alive.
+wg-quick up wg0
