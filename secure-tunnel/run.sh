@@ -17,11 +17,6 @@ if [[ -z "$API_KEY" ]]; then
     exit 1
 fi
 
-if [[ ! "$API_KEY" =~ ^[a-zA-Z0-9_-=]+$ ]]; then
-    bashio::log.fatal "Invalid API Key format. API Key should only contain alphanumeric characters, hyphens, underscores, and equal signs."
-    exit 1
-fi
-
 bashio::log.info "Fetching WireGuard configuration from server..."
 
 # Validate API key length (reasonable bounds to prevent abuse)
