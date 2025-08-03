@@ -17,7 +17,21 @@ if [[ -z "$API_KEY" ]]; then
     exit 1
 fi
 
+if [[ ! "$API_KEY" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    bashio::log.fatal "Invalid API Key format. API Key should only contain alphanumeric characters, hyphens, and underscores."
+    exit 1
+fi
+
 bashio::log.info "Fetching WireGuard configuration from server..."
+
+# Validate API key length (reasonable bounds to prevent abuse)
+API_KEY_LENGTH=${#API_KEY}
+if [[ $API_KEY_LENGTH -lt 20 || $API_KEY_LENGTH -gt 200 ]]; then
+    bashio::log.fatal "Invalid API Key length. API Key must be between 20 and 200 characters."
+    exit 1
+fi
+
+bashio::log.info "API Key validation passed. Fetching WireGuard configuration from server..."
 
 # Bring down wg0 if it exists from a previous run
 if ip link show wg0 &>/dev/null; then
@@ -32,11 +46,31 @@ if [[ -f /etc/wireguard/wg0.conf ]]; then
     rm -f /etc/wireguard/wg0.conf
 fi
 
-# Get the config file content from the new endpoint
-CONFIG_CONTENT=$(curl -G -s --data-urlencode "apiKey=${API_KEY}" "https://webfork.tech/api/v1/wireguard-config")
+HTTP_RESPONSE=$(curl -G -s -w "%{http_code}" \
+    --connect-timeout 10 \
+    --max-time 30 \
+    --retry 3 \
+    --retry-delay 2 \
+    --data-urlencode "apiKey=${API_KEY}" \
+    "https://webfork.tech/api/v1/wireguard-config")
+
+# Extract HTTP status code (last 3 characters)
+HTTP_CODE="${HTTP_RESPONSE: -3}"
+CONFIG_CONTENT="${HTTP_RESPONSE%???}"
+
+# Validate HTTP response
+if [[ "$HTTP_CODE" != "200" ]]; then
+    bashio::log.fatal "Server returned HTTP error code: ${HTTP_CODE}. Please check your API key and try again."
+    exit 1
+fi
 
 if [[ -z "$CONFIG_CONTENT" ]]; then
     bashio::log.fatal "Failed to get configuration from server. Response was empty."
+    exit 1
+fi
+
+if [[ ! "$CONFIG_CONTENT" =~ \[Interface\] ]]; then
+    bashio::log.fatal "Invalid WireGuard configuration received. Missing [Interface] section."
     exit 1
 fi
 
