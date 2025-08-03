@@ -1,9 +1,9 @@
 # ha-tunnel-addon/config.yaml
 name: "Secure Tunnel"
-version: "1.0.0"
+version: "1.0.1"
 slug: "hap_secure_tunnel"
 description: "Connects your Home Assistant to the Secure Tunneling Service."
-url: "https://github.com/webfork/hap-addon2"
+url: "https://github.com/webfork/hap-addon"
 arch:
   - aarch64
   - amd64

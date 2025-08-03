@@ -17,8 +17,8 @@ if [[ -z "$API_KEY" ]]; then
     exit 1
 fi
 
-if [[ ! "$API_KEY" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-    bashio::log.fatal "Invalid API Key format. API Key should only contain alphanumeric characters, hyphens, and underscores."
+if [[ ! "$API_KEY" =~ ^[a-zA-Z0-9_-=]+$ ]]; then
+    bashio::log.fatal "Invalid API Key format. API Key should only contain alphanumeric characters, hyphens, underscores, and equal signs."
     exit 1
 fi
 
