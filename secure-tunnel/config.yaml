@@ -1,6 +1,6 @@
 # ha-tunnel-addon/config.yaml
 name: "Secure Tunnel Addon"
-version: "3.0.6"
+version: "3.0.7"
 slug: "secure_tunnel_addon"
 description: "Connects your Home Assistant to the Secure Tunneling Service."
 url: "https://github.com/webfork/hap-addon2"
@@ -16,6 +16,5 @@ privileged:
   - NET_ADMIN
 options:
   api_key: ""
-
 schema:
   api_key: "password"
