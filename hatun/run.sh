@@ -47,7 +47,7 @@ HTTP_RESPONSE=$(curl -G -s -w "%{http_code}" \
     --retry 3 \
     --retry-delay 2 \
     --data-urlencode "apiKey=${API_KEY}" \
-    "https://webfork.tech/api/v1/wireguard-config")
+    "https://hatun.tech/api/v1/wireguard-config")
 
 # Extract HTTP status code (last 3 characters)
 HTTP_CODE="${HTTP_RESPONSE: -3}"
