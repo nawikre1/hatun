@@ -3,14 +3,15 @@
 
 Hatun – Secure Tunnel Service for Your Home Assistant
 
-Hatun (short for Home Assistant TUNnel) is a secure, privacy-first service that lets you access your Home Assistant instance from anywhere. Using Cloudflare for all SSL security certificates, Hatun ensures fully encrypted connections between your smart home and your devices—without the need for VPNs or complex router setups.
+Hatun (short for Home Assistant TUNnel) is a secure, privacy-first service that lets you access your Home Assistant instance from anywhere in the world. Powered by Cloudflare SSL certificates, Hatun provides fully encrypted connections—no VPN or complex router setup required.
 
-For just €6.05/month (incl. VAT), Hatun gives you:
+For just €6.05/month (incl. VAT), you get:
 
 Safe remote access to your Home Assistant via phone, tablet, or browser.
 
-End-to-end encrypted traffic where even the tunnel provider cannot view your data.
+End-to-end encrypted traffic where even the provider cannot see your data.
 
-Hassle-free setup with no additional hardware required.
+Quick, hassle-free setup with no extra hardware.
 
-Hatun is the simple, reliable, and affordable way to connect to your Home Assistant securely from anywhere in the world.
+Subscribe today at hatun.tech
+ and enjoy simple, reliable, and affordable secure access to your smart home.
