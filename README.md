@@ -13,5 +13,5 @@ End-to-end encrypted traffic where even the provider cannot see your data.
 
 Quick, hassle-free setup with no extra hardware.
 
-Subscribe today at hatun.tech
+Subscribe today at [hatun.tech](https://hatun.tech/)
  and enjoy simple, reliable, and affordable secure access to your smart home.
